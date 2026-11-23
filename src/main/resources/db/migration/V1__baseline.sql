@@ -1,0 +1,1 @@
+-- Initial structure-only baseline migration for Asta Identity Hub.

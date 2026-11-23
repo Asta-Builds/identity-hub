@@ -11,6 +11,71 @@ person approves and merges.
 - What it does and why: [`docs/spec.md`](docs/spec.md)
 - Rules for agents (and people): [`AGENTS.md`](AGENTS.md)
 
+## Local development
+
+### Prerequisites
+
+- Java 17
+- Docker (with Docker Compose)
+
+### Start local PostgreSQL
+
+Start PostgreSQL 17 locally using Docker Compose:
+
+```bash
+docker compose up -d --wait
+```
+
+Stop it when finished:
+
+```bash
+docker compose down
+```
+
+### Run the backend
+
+Run the Spring Boot application with the Maven Wrapper:
+
+```bash
+./mvnw spring-boot:run
+```
+
+On Windows PowerShell:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+Datasource configuration uses environment variables with local defaults matching `compose.yaml`:
+
+| Variable | Default |
+|---|---|
+| `DB_URL` | `jdbc:postgresql://localhost:5432/identityhub` |
+| `DB_USER` | `identityhub` |
+| `DB_PASSWORD` | `identityhub` |
+
+Verify the application is up:
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Expected response: `{"status":"UP"}`.
+
+### Build and verify
+
+Run the full build and Testcontainers PostgreSQL integration tests (requires Docker):
+
+```bash
+./mvnw -B verify
+```
+
+On Windows PowerShell:
+
+```powershell
+.\mvnw.cmd -B verify
+```
+
 ## Status
 
 Specification written; the MVP is being built ticket by ticket (see the issues).
