@@ -15,8 +15,27 @@ request that closes the issue. People review and merge; an agent never merges or
 - Connectors contain no business logic: they apply the operation they are given.
 - Null is not absent: keep the difference in DTOs, JSON handling, comparisons and tests.
 - Flyway migrations: structure only, never data. Never edit a migration that is on `main`; add a
-  new one.
-- Every write goes through the audit log.
+  new one. Protect `audit_log` with a PostgreSQL `BEFORE UPDATE OR DELETE` trigger raising an
+  exception so audit rows are strictly append-only.
+- Every write goes through the audit log with the authenticated caller's verified principal.
+- Security invariants:
+  - Deny by default in Spring Security: only `GET /actuator/health` is public; enforce `@PreAuthorize`
+    separating `ROLE_SOURCE_INGEST`, `ROLE_RULE_EDITOR`, `ROLE_PLAN_APPROVER`, and `ROLE_AUDITOR`.
+  - Enforce Four-Eyes Segregation of Duties on `POST /api/plans/{id}/apply` (`approver != plan.createdBy`
+    and `approver != rule.updatedBy`) with SHA-256 plan digest verification.
+  - Never build LDAP DNs or search filters with string concatenation; always use UnboundID typed `DN`,
+    `RDN`, and `Filter.create*Filter` APIs (RFC 4514 / RFC 4515), and encrypt connector credentials at
+    rest with AES-256-GCM.
+  - Never evaluate rule templates or conditions with Spring SpEL (`StandardEvaluationContext`).
+
+## Commits
+
+- Commit in small, focused steps, each one building and passing its tests: for example the migration,
+  then the domain model, then the service, then the API, then the tests that cover it. A ticket is
+  usually 4 to 8 commits, never one big commit.
+- Message: one sentence in the imperative ("Add the person table"), with the issue number at the end
+  (`(#2)`). Never `Co-Authored-By`.
+- Never commit generated files, build output or secrets.
 
 ## Tests
 
